@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
+	<classpathentry kind="lib" path="/home/al/tools/iaik/devjars/iaik_jce.jar"/>
+	<classpathentry kind="lib" path="/home/al/tools/iaik/devjars/iaik_jce_native_aes.jar"/>
+	<classpathentry kind="lib" path="/home/al/tools/iaik/devjars/iaikPkcs11Provider.jar"/>
+	<classpathentry kind="lib" path="/home/al/tools/iaik/devjars/iaikPkcs11Provider_cms.jar"/>
+	<classpathentry kind="lib" path="/home/al/tools/iaik/devjars/javax.mail-api-1.5.2.jar"/>
+	<classpathentry kind="lib" path="/home/al/tools/iaik/devjars/iaik_cms.jar"/>
+	<classpathentry kind="lib" path="/home/al/tools/iaik/devjars/iaik_tsp.jar"/>
+	<classpathentry kind="lib" path="/home/al/tools/iaik/devjars/iaik_eccelerate.jar"/>
+	<classpathentry kind="lib" path="/home/al/tools/iaik/devjars/iaik_eccelerate_cms.jar"/>
+	<classpathentry kind="lib" path="/home/al/tools/iaik/devjars/iaik_eccelerate_ssl.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
