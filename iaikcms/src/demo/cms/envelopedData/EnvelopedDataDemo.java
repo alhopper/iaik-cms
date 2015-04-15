@@ -378,6 +378,7 @@ public class EnvelopedDataDemo {
     } else {
       throw new CMSException("No recipient with ID: " + recipientID);
     }    
+    
     // decrypt the content encryption key and the content
     try {
       System.out.println("Decrypt encrypted content encryption key...");

@@ -101,6 +101,7 @@ public class SetupCMSKeyStore implements CMSKeyStoreConstants {
   // CA keys
   KeyPair ca_dsa = null;
   KeyPair ca_rsa = null;
+  KeyPair ca_ec = null;
   
   // RSA for signing
   KeyPair rsa512_sign = null;
@@ -128,6 +129,13 @@ public class SetupCMSKeyStore implements CMSKeyStoreConstants {
   KeyPair ssdh1024 = null;
   KeyPair ssdh1024_ = null;
   
+  // EC for signing
+  KeyPair ec256_sign = null;
+  // EC for encrypting
+  KeyPair ec256_crypt;
+  // ECDSA signing
+  KeyPair ecdsa256 = null;
+  
   // TSP Server
   KeyPair tsp_server = null;
 
@@ -143,6 +151,8 @@ public class SetupCMSKeyStore implements CMSKeyStoreConstants {
   boolean create_ssdh;
   // create TSP server key and certificate
   boolean create_tspserver;
+  // create EC keys and certificates
+  boolean create_ec;
   
   
   /**
@@ -151,8 +161,10 @@ public class SetupCMSKeyStore implements CMSKeyStoreConstants {
   public SetupCMSKeyStore() {
     create_rsa = true;
     create_dsa = true;
+    System.out.println("Utils.isClassAvailable(iaik.security.dh.ESDHPublicKey) " + Utils.isClassAvailable("iaik.security.dh.ESDHPublicKey"));
     create_dsa_sha2 = ((create_dsa) && (Utils.getIaikProviderVersion() >= 3.18));
     create_esdh = create_ssdh = Utils.isClassAvailable("iaik.security.dh.ESDHPublicKey");
+    create_ec = true;
     create_tspserver = true;
   }  
 
@@ -449,6 +461,16 @@ public class SetupCMSKeyStore implements CMSKeyStoreConstants {
       System.out.println("Unable to get SSDH keys from KeyStore: " + ex.toString());
       create_ssdh = false;
     }
+    // EC
+    try {
+    	ca_ec = getKeyPair(CA_EC);
+    	ec256_crypt = getKeyPair(EC_256_CRYPT);
+    	ec256_sign = getKeyPair(EC_256_SIGN);
+    	ecdsa256 = getKeyPair(ECDSA_256);
+    } catch (Exception ex) {
+        System.out.println("Unable to get EC keys from KeyStore: " + ex.toString());
+        create_ec = false;
+    }
     // TSP server
     try {
       tsp_server = getKeyPair(TSP_SERVER);
@@ -545,6 +567,23 @@ public class SetupCMSKeyStore implements CMSKeyStoreConstants {
   	    }
   	  }
       
+			if (create_ec) {
+				try {
+			        System.out.println("generate EC KeyPair for CA certificate 256...");
+			  	    ca_dsa = generateKeyPair("EC", 256);
+
+					System.out.println("Generate EC signing keys...");
+					System.out.println("generate EC KeyPair for a test certificate [256 bits]...");
+					ec256_sign = generateKeyPair("EC", 256);
+					System.out.println("Generate EC encryption keys...");
+					System.out.println("generate EC KeyPair for a test certificate [256 bits]...");
+					ec256_crypt = generateKeyPair("EC", 256);
+				} catch (NoSuchAlgorithmException ex) {
+					create_ec = false;
+					System.out.println("No implementation for EC! EC certificates are not created!\n");
+				}
+			}
+    
       if (create_tspserver) {
         try {
           System.out.println("generate RSA KeyPair for a tsp server test certificate [1024 bits]...");
@@ -583,6 +622,7 @@ public class SetupCMSKeyStore implements CMSKeyStoreConstants {
       //
       X509Certificate caRSA = null;
       X509Certificate caDSA = null;
+      X509Certificate caEC = null;
       X509Certificate[] chain = new X509Certificate[1];
       // for verifying the created certificates
       SimpleChainVerifier verifier = new SimpleChainVerifier();
@@ -626,6 +666,26 @@ public class SetupCMSKeyStore implements CMSKeyStoreConstants {
         addToKeyStore(ca_dsa, chain, CA_DSA);
         issuer.removeRDN(ObjectID.commonName);
       }
+      if (create_ec) {
+          issuer.addRDN(ObjectID.commonName ,"IAIK EC Test CA");
+          System.out.println("create self signed EC CA certificate...");
+          caEC = createCertificate(issuer, 
+                                    ca_ec.getPublic(),
+                                    issuer,
+                                    ca_ec.getPrivate(),
+                                    (AlgorithmID)AlgorithmID.ecdsa_With_SHA256.clone(),
+                                    null,
+                                    true,
+                                    false);
+          // verify the self signed certificate
+          caEC.verify();
+          // set the CA cert as trusted root
+          verifier.addTrustedCertificate(caEC);
+          chain[0] = caEC;
+          addToKeyStore(ca_ec, chain, CA_EC);
+          issuer.removeRDN(ObjectID.commonName);
+        }
+
 
       //
       // create certificates
@@ -889,6 +949,49 @@ public class SetupCMSKeyStore implements CMSKeyStoreConstants {
         chain[1] = caDSA;
         verifier.verifyChain(chain);
         addToKeyStore(esdh2048, chain, ESDH_2048);
+        issuer.removeRDN(ObjectID.commonName);
+      }
+
+      // create a EC test certificate
+      if (create_ec) {
+          issuer.addRDN(ObjectID.commonName ,"IAIK EC Test CA");
+
+      System.out.println("Create EC demo certificates to be used for signing...");
+      SubjectKeyIdentifier subjectKeyID = (SubjectKeyIdentifier)caRSA.getExtension(SubjectKeyIdentifier.oid);
+      // 256
+      subject.addRDN(ObjectID.commonName, "EC 256 bit Demo Signing Certificate");
+      System.out.println("create 256 bit EC demo certificate...");
+      chain[0] = createCertificate(subject,
+                                   ec256_sign.getPublic(),
+                                   issuer, 
+                                   ca_ec.getPrivate(),
+                                   (AlgorithmID)AlgorithmID.ecdsa_With_SHA256.clone(),
+                                   subjectKeyID.get(),
+                                   true,
+                                   false);
+      chain[1] = caEC;
+      // and verify the chain
+      verifier.verifyChain(chain);
+      addToKeyStore(ec256_sign, chain, EC_256_SIGN);
+      subject.removeRDN(ObjectID.commonName);
+      // for encrypting
+      System.out.println("Create EC demo certificates to be used for encryption...");
+      // 256
+      subject.addRDN(ObjectID.commonName, "EC 256 bit Demo Encryption Certificate");
+      System.out.println("create 256 bit EC demo certificate...");
+      chain[0] = createCertificate(subject,
+                                   ec256_crypt.getPublic(),
+                                   issuer, 
+                                   ca_ec.getPrivate(),
+                                   (AlgorithmID)AlgorithmID.ecdsa_With_SHA256.clone(),
+                                   subjectKeyID.get(), 
+                                   false,
+                                   false);
+      chain[1] = caEC;
+      // and verify the chain
+      verifier.verifyChain(chain);
+      addToKeyStore(ec256_crypt, chain, EC_256_CRYPT);
+      subject.removeRDN(ObjectID.commonName);
         issuer.removeRDN(ObjectID.commonName);
       }
       

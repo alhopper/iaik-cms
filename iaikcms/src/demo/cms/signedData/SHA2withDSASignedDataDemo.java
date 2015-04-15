@@ -259,10 +259,17 @@ public class SHA2withDSASignedDataDemo {
     IssuerAndSerialNumber issuer = new IssuerAndSerialNumber(signerCertificates_[0]);
 
     // create a new SignerInfo
+    /*
     SignerInfo signer_info = new SignerInfo(issuer,
                                             (AlgorithmID)AlgorithmID.sha256.clone(),
                                             (AlgorithmID)AlgorithmID.dsaWithSHA256.clone(),
                                             signerKey_);
+     */
+    SignerInfo signer_info = new SignerInfo(issuer,
+            (AlgorithmID)AlgorithmID.sha256.clone(),
+            (AlgorithmID)AlgorithmID.dsaWithSHA256.clone(),
+            signerKey_);
+
     // create some authenticated attributes
     // the message digest attribute is automatically added
     Attribute[] attributes = new Attribute[2];

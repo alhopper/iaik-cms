@@ -42,6 +42,7 @@ package demo.keystore;
 public interface CMSKeyStoreConstants {
   public final static String CA_RSA           = "CA.RSA";
   public final static String CA_DSA           = "CA.DSA";
+  public final static String CA_EC 			  = "CA.EC";
   public final static String RSA_512_SIGN     = "RSA_SIGN.512";
   public final static String RSA_512_CRYPT    = "RSA_CRYPT.512";
   public final static String RSA_1024_SIGN    = "RSA_SIGN.1024";
@@ -59,6 +60,9 @@ public interface CMSKeyStoreConstants {
   public final static String ESDH_2048        = "ESDH.2048";
   public final static String SSDH_1024        = "SSDH.1024";
   public final static String SSDH_1024_       = "SSDH_.1024";
+  public final static String EC_256_SIGN  	  = "EC_SIGN.256";
+  public final static String EC_256_CRYPT     = "EC_CRYPT.256";
+  public final static String ECDSA_256		  = "ECDSA.256";
   public final static String TSP_SERVER       = "TSP.SERVER";
   public final static String KS_FILENAME      = "cms.keystore";
   public final static char[] KS_PASSWORD      = "topSecret".toCharArray();

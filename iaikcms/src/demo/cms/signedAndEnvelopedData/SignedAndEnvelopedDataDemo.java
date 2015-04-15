@@ -178,15 +178,17 @@ public class SignedAndEnvelopedDataDemo {
         // create the recipient infos
     RecipientInfo[] recipients = new RecipientInfo[2];
     // user1 is the first receiver
-    recipients[0] = new KeyTransRecipientInfo(user1_crypt, (AlgorithmID)AlgorithmID.rsaEncryption.clone());
+    // was rsaEncryption
+    recipients[0] = new KeyTransRecipientInfo(user1_crypt, (AlgorithmID)AlgorithmID.aes256_CBC.clone());
     // user2 is the second receiver
-    recipients[1] = new KeyTransRecipientInfo(user2_crypt, (AlgorithmID)AlgorithmID.rsaEncryption.clone());
+    recipients[1] = new KeyTransRecipientInfo(user2_crypt, (AlgorithmID)AlgorithmID.aes256_CBC.clone());
 
     // specify the recipients of the encrypted message
     enveloped.setRecipientInfos(recipients);
 
     // encrypt and write the data to the output stream
-    enveloped.writeTo(os,2048);
+// ??   enveloped.writeTo(os,2048);
+    enveloped.writeTo(os, 1024);
     // finished
     os.close();
     is.close();
